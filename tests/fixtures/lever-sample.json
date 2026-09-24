@@ -1,0 +1,17 @@
+[
+  {
+    "text": "Analytics Engineer",
+    "hostedUrl": "https://jobs.lever.co/testcompany/abc-123",
+    "categories": { "location": "Remote" }
+  },
+  {
+    "text": "AI Automation Specialist",
+    "hostedUrl": "https://jobs.lever.co/testcompany/abc-456",
+    "categories": { "location": "Buenos Aires" }
+  },
+  {
+    "text": "No URL Job",
+    "hostedUrl": "",
+    "categories": { "location": "Remote" }
+  }
+]

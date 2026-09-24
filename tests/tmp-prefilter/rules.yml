@@ -1,0 +1,22 @@
+reject_if_title_contains:
+  - "intern"
+  - "trainee"
+  - "pasante"
+  - "blockchain developer"
+
+reject_if_jd_contains:
+  - "100% presencial"
+  - "solo presencial"
+  - "us work authorization required"
+
+reject_if_location:
+  - "only new york"
+  - "only london"
+
+require_any_title: []
+
+company_blacklist:
+  - "shadyco"
+  - "scam corp"
+
+min_jd_chars: 50

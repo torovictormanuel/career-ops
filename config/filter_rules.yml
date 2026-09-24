@@ -1,0 +1,114 @@
+# ==============================================================================
+# filter_rules.yml — Reglas del Pre-Filter (rule-based, sin LLM)
+#
+# El Pre-Filter descarta ofertas que violan reglas DURAS antes de llamar al LLM.
+# Ahorra tokens y tiempo: < 5ms por oferta, sin costo de API.
+#
+# Estructura:
+#   reject_if_title_contains: keywords en el TÍTULO que descartan la oferta
+#   reject_if_jd_contains:    keywords en el CUERPO que descartan la oferta
+#   reject_if_location:       patrones de ubicación que descartan la oferta
+#   require_any_title:        el TÍTULO debe contener al menos uno de estos
+#   company_blacklist:        empresas descartadas directamente por nombre
+#   min_jd_chars:             mínimo de caracteres del JD para ser evaluada
+# ==============================================================================
+
+# ── Descartar por título (case-insensitive) ───────────────────────────────────
+reject_if_title_contains:
+  # Seniority incompatible
+  - "intern"
+  - "internship"
+  - "estágio"
+  - "estagiário"
+  - "pasante"
+  - "trainee"
+  - "apprentice"
+  - "aprendiz"
+
+  # Stacks completamente fuera de perfil
+  - "ios developer"
+  - "android developer"
+  - "mobile developer"
+  - ".net developer"
+  - "php developer"
+  - "ruby developer"
+  - "cobol"
+  - "mainframe"
+  - "embedded software"
+  - "firmware engineer"
+  - "fpga"
+  - "network engineer"
+  - "sap basis"
+  - "oracle dba"
+  - "blockchain developer"
+  - "web3 developer"
+  - "smart contract"
+  - "hardware engineer"
+  - "devops engineer"   # Victor no tiene experiencia en DevOps puro
+
+  # Roles de gestión que requieren experiencia de manager
+  - "vp of engineering"
+  - "cto"
+  - "chief data officer"
+  - "head of engineering"
+
+# ── Descartar por contenido del JD (case-insensitive) ─────────────────────────
+reject_if_jd_contains:
+  # Modalidad incompatible
+  - "exclusively on-site"
+  - "100% presencial"
+  - "solo presencial"
+  - "no remoto"
+  - "no aplica trabajo remoto"
+
+  # Idioma excluyente (solo portugués sin inglés/español)
+  - "somente em português"
+  - "exclusivamente en portugués"
+
+  # Requiere visa / relocalización incompatible
+  - "us work authorization required"
+  - "must be authorized to work in the us"
+  - "must relocate to"
+  - "on-site in new york"
+  - "on-site in san francisco"
+  - "on-site in london"
+
+  # Experiencia de gestión requerida
+  - "manage a team of"
+  - "lead a team of 10"
+  - "people management required"
+
+# ── Descartar por ubicación ───────────────────────────────────────────────────
+reject_if_location:
+  # Ciudades 100% presenciales sin opción remota
+  - "only new york"
+  - "only london"
+  - "only san francisco"
+  - "only tokyo"
+  # Nota: NO descartar por país — puede ser remoto desde LATAM
+
+# ── El TÍTULO debe incluir al menos uno (pre-filtro positivo) ─────────────────
+# Comentado por defecto — muy restrictivo. Activar si hay demasiado ruido.
+# require_any_title:
+#   - "data"
+#   - "analytics"
+#   - "bi"
+#   - "analyst"
+#   - "automation"
+#   - "ai"
+#   - "machine learning"
+#   - "analista"
+#   - "datos"
+
+# ── Empresas en blacklist ─────────────────────────────────────────────────────
+# Agregar empresas con experiencias negativas o culturas incompatibles
+company_blacklist: []
+  # Ejemplo:
+  # - "empresa con reviews terribles"
+
+# ── Longitud mínima del JD ────────────────────────────────────────────────────
+# Ofertas con JD muy corto (login wall, JD removida, etc.) se descartan aquí
+# Set to 0 — el JdExtractor ya valida longitud mínima al extraer el JD real.
+# El Pre-Filter corre con jd='' (antes del fetch), así que este valor siempre
+# rechazaría todas las ofertas de portales API (Greenhouse, Ashby, Lever).
+min_jd_chars: 0

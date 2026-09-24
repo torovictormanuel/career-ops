@@ -1,0 +1,6 @@
+reject_if_title_contains: []
+reject_if_jd_contains: []
+reject_if_location: []
+require_any_title: []
+company_blacklist: []
+min_jd_chars: 0

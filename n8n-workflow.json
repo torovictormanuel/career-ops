@@ -1,0 +1,169 @@
+{
+  "name": "career-ops — Scan Automático de Vacantes",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "trigger-8am",
+      "name": "8am (Lun-Vie)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 160]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 13 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "trigger-1pm",
+      "name": "1pm (Lun-Vie)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "trigger-6pm",
+      "name": "6pm (Lun-Vie)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 440]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3099/run-scan",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": false
+      },
+      "id": "trigger-scan",
+      "name": "Disparar Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://127.0.0.1:3099/health",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "check-bot",
+      "name": "Verificar Bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 160]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "bot-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bot-alive",
+      "name": "Bot activo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [700, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3099/run-scan",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": false
+      },
+      "id": "trigger-scan-2",
+      "name": "Disparar Scan (via health)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 160]
+    }
+  ],
+  "connections": {
+    "8am (Lun-Vie)": {
+      "main": [
+        [{ "node": "Verificar Bot", "type": "main", "index": 0 }]
+      ]
+    },
+    "1pm (Lun-Vie)": {
+      "main": [
+        [{ "node": "Disparar Scan", "type": "main", "index": 0 }]
+      ]
+    },
+    "6pm (Lun-Vie)": {
+      "main": [
+        [{ "node": "Disparar Scan", "type": "main", "index": 0 }]
+      ]
+    },
+    "Verificar Bot": {
+      "main": [
+        [{ "node": "Bot activo?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Bot activo?": {
+      "main": [
+        [{ "node": "Disparar Scan (via health)", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["career-ops", "whatsapp", "automation"],
+  "triggerCount": 3,
+  "updatedAt": "2026-05-15T00:00:00.000Z",
+  "id": "career-ops-scan-workflow"
+}

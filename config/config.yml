@@ -1,0 +1,167 @@
+﻿# ==============================================================================
+# career-ops v2.0 â€” Master Config
+# Archivo de configuraciÃ³n central del sistema de agentes.
+# REGLA: Toda constante del sistema vive aquÃ­. Cero hardcode en el cÃ³digo.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# SISTEMA
+# ------------------------------------------------------------------------------
+system:
+  version: "2.0.0"
+  base_dir: "."                        # Relativo a la raÃ­z del proyecto
+  run_id_prefix: "run"                 # Prefijo para los IDs de ejecuciÃ³n (ej: run-abc123)
+  dry_run: false                       # true = no envÃ­a WA, no escribe en data/
+
+# ------------------------------------------------------------------------------
+# PIPELINE â€” Umbrales de decisiÃ³n
+# ------------------------------------------------------------------------------
+pipeline:
+  score_threshold_notify: 3.5          # Score mÃ­nimo para enviar notificaciÃ³n WhatsApp
+  score_threshold_apply: 3.5           # Score mÃ­nimo recomendado para aplicar
+  score_threshold_skip: 2.0            # Score mÃ¡ximo para descartar automÃ¡ticamente
+  jd_min_chars: 100                    # MÃ­nimo de caracteres para considerar un JD vÃ¡lido
+  max_offers_per_run: 50               # MÃ¡ximo de ofertas a evaluar por ejecuciÃ³n (protecciÃ³n de tokens)
+  prioritization_weights:
+    score: 0.70
+    company_rating: 0.20
+    recency: 0.10
+
+# ------------------------------------------------------------------------------
+# ORCHESTRATOR â€” Cron y scheduling
+# ------------------------------------------------------------------------------
+orchestrator:
+  cron_schedule:
+    - "0 8 * * 1-5"                    # Lunes a Viernes 08:00
+    - "0 13 * * 1-5"                   # Lunes a Viernes 13:00
+    - "0 18 * * 1-5"                   # Lunes a Viernes 18:00
+  digest_cron: "0 18 * * 1-5"         # Horario del Daily Digest (Ãºltimo cron del dÃ­a)
+  weekly_report_cron: "0 9 * * 1"     # Reporte semanal: lunes 09:00
+
+# ------------------------------------------------------------------------------
+# DISCOVERY AGENT
+# ------------------------------------------------------------------------------
+discovery:
+  portals_config: "portals.yml"        # Archivo de configuraciÃ³n de portales
+  dedup_index: "data/dedup-index.json" # Ãndice de URLs ya procesadas
+  dedup_ttl_days: 90                   # DÃ­as que se recuerda una URL antes de reprocessarla
+  scraper:
+    user_agents:                       # Pool de User-Agents para rotaciÃ³n anti-ban
+      - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+      - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+    request_delay_ms:
+      min: 2000                        # Delay mÃ­nimo entre requests (ms)
+      max: 5000                        # Delay mÃ¡ximo entre requests (ms)
+    timeout_ms: 15000                  # Timeout por request
+
+# ------------------------------------------------------------------------------
+# ANALYSIS AGENT
+# ------------------------------------------------------------------------------
+analysis:
+  filter_rules: "config/filter_rules.yml"  # Reglas del Pre-Filter (rule-based)
+  profile: "config/victor_profile.md"      # Perfil del candidato para el LLM Scorer
+  jd_extractor:
+    fallback_selectors:               # Selectores CSS fallback para extraer JD
+      - "article"
+      - "[class*='description']"
+      - "[class*='job-detail']"
+      - "[id*='job-description']"
+      - "main"
+  llm_scorer:
+    model: "claude-opus-4-5"          # Modelo LLM para scoring
+    max_tokens: 1024
+    temperature: 0.2                  # Baja temperatura = respuestas mÃ¡s consistentes
+    prompt_template: "prompts/scorer/system-prompt.md"
+    max_retries: 2                    # Reintentos si JSON es invÃ¡lido
+  company_enricher:
+    cache_file: "data/company-cache.json"
+    cache_ttl_days: 7
+
+# ------------------------------------------------------------------------------
+# APPLICATION AGENT
+# ------------------------------------------------------------------------------
+application:
+  tracker_file: "data/applications.md"
+  cover_letter:
+    model: "claude-opus-4-5"
+    max_tokens: 800
+    temperature: 0.7                  # Mayor creatividad para cartas
+    prompt_template: "prompts/cover-letter/system-prompt.md"
+    max_words: 300
+  state_machine:
+    states:
+      - NEW
+      - QUEUED
+      - NOTIFIED
+      - APPLY_PENDING
+      - SENT
+      - INTERVIEW
+      - OFFER
+      - REJECTED
+      - DISCARDED
+      - SKIP
+    initial: NEW
+    terminal: [OFFER, REJECTED, DISCARDED, SKIP]
+
+# ------------------------------------------------------------------------------
+# NOTIFICATION AGENT
+# ------------------------------------------------------------------------------
+notification:
+  whatsapp:
+    webhook_url: "http://127.0.0.1:3099/notify-status"   # bot v1.x endpoint (acepta {message})
+    phone: "5491153371839"                                 # numero destino (WA_MY_NUMBER)
+    session_path: "data/whatsapp-session"
+    bot_port: 3099
+    max_reconnect_attempts: 3
+    reconnect_delay_ms: 5000
+    message_template: "prompts/notifier/whatsapp-template.md"
+  digest:
+    max_message_chars: 1000            # LÃ­mite de caracteres del digest de WhatsApp
+
+# ------------------------------------------------------------------------------
+# ERROR HANDLER AGENT
+# ------------------------------------------------------------------------------
+error_handler:
+  retry:
+    max_attempts: 3
+    delays_ms: [30000, 120000, 600000] # 30s, 2min, 10min
+  circuit_breaker:
+    failure_threshold: 3               # Fallos consecutivos para abrir el circuito
+    open_duration_ms: 7200000          # 2 horas antes de pasar a HALF_OPEN
+    state_file: "data/circuit-breaker-state.json"
+  dead_letter_queue: "data/dead-letter.json"
+  critical_error_notify_whatsapp: true
+
+# ------------------------------------------------------------------------------
+# LOGGING
+# ------------------------------------------------------------------------------
+logging:
+  dir: "logs"
+  level: "info"                        # debug | info | warn | error
+  rotation: "daily"                    # Nuevo archivo por dÃ­a: logs/YYYY-MM-DD.json
+  include_run_id: true
+  fields:
+    - timestamp
+    - run_id
+    - agent_id
+    - level
+    - message
+    - offer_url
+
+# ------------------------------------------------------------------------------
+# RUTAS DE ARCHIVOS â€” Fuente Ãºnica de verdad para paths
+# ------------------------------------------------------------------------------
+paths:
+  pipeline: "data/pipeline.md"
+  applications: "data/applications.md"
+  scan_history: "data/scan-history.tsv"
+  dedup_index: "data/dedup-index.json"
+  company_cache: "data/company-cache.json"
+  circuit_breaker: "data/circuit-breaker-state.json"
+  dead_letter: "data/dead-letter.json"
+  reports: "reports"
+  logs: "logs"
+  agents: "agents"
+  prompts: "prompts"
+  tests: "tests"

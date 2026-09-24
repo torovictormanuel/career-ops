@@ -1,0 +1,19 @@
+{
+  "jobs": [
+    {
+      "title": "Data Scientist",
+      "jobUrl": "https://jobs.ashbyhq.com/testcompany/job-111",
+      "location": "Remote - Latin America"
+    },
+    {
+      "title": "BI Developer",
+      "jobUrl": "https://jobs.ashbyhq.com/testcompany/job-222",
+      "location": "Argentina"
+    },
+    {
+      "title": "Missing URL",
+      "jobUrl": "",
+      "location": "Remote"
+    }
+  ]
+}

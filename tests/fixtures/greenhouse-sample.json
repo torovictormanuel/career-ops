@@ -1,0 +1,23 @@
+{
+  "jobs": [
+    {
+      "absolute_url": "https://boards.greenhouse.io/testcompany/jobs/1001",
+      "title": "Data Analyst",
+      "location": { "name": "Buenos Aires, Argentina" }
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/testcompany/jobs/1002",
+      "title": "Business Intelligence Engineer",
+      "location": { "name": "Remote - LATAM" }
+    },
+    {
+      "absolute_url": "https://boards.greenhouse.io/testcompany/jobs/1003",
+      "title": "iOS Developer",
+      "location": { "name": "São Paulo, Brazil" }
+    },
+    {
+      "title": "Missing URL job",
+      "location": { "name": "Remote" }
+    }
+  ]
+}
