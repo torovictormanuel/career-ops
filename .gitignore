@@ -22,13 +22,36 @@ writing-samples/*
 
 # User config and customization (never auto-updated)
 config/profile.yml
+config/*_profile.md
 portals.yml
 modes/_profile.md
+article-digest.md
+interview-prep/*
+!interview-prep/.gitkeep
 .update-dismissed
 .update-lock
 
 # Secrets (never commit — use .env.example as template)
 .env
+
+# WhatsApp integration (auth tokens + runtime data)
+.wwebjs_cache/
+data/whatsapp-session/
+data/qr.png
+
+# Runtime state & cache
+data/circuit-breaker-state.json
+data/company-cache.json
+data/dedup-index.json
+data/notifications-sent.json
+
+# Logs and transient output
+data/*.log
+data/*.txt
+data/*.bak
+data/session-report.html
+data/session-report.pdf
+logs/
 
 # Generated
 .resolved-prompt-*
